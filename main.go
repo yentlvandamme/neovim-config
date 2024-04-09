@@ -14,6 +14,11 @@ type Config struct {
 	Description string
 }
 
+type Distribution struct {
+	path   string
+	config Config
+}
+
 func main() {
 	cmd := os.Args[1]
 
@@ -22,54 +27,58 @@ func main() {
 		configName := os.Args[2]
 		var err error
 
-		config, err := getConfig(configName)
+		dist, err := getDist(configName)
 		if err != nil {
-            fmt.Fprintln(os.Stderr, err)
+			fmt.Fprintln(os.Stderr, err)
 			return
 		}
 
-		fmt.Println(config.Name)
+		fmt.Println(dist.config.Name)
 	}
 }
 
-func getConfig(name string) (Config, error) {
+func getDist(name string) (Distribution, error) {
 	var err error
+	distribution := Distribution{}
 	config := Config{}
 
 	currentDir, err := os.Getwd()
 	if err != nil {
-		return config, err
+		return distribution, err
 	}
 
 	distsPath := currentDir + "/distributions"
 	dists, err := os.ReadDir(distsPath)
 	if err != nil {
-		return config, err
+		return distribution, err
 	}
 
 	for _, dist := range dists {
 		if dist.IsDir() {
-			manifestUri := distsPath + "/" + dist.Name() + "/manifest.json"
+			distPath := distsPath + "/" + dist.Name()
+			manifestUri := distPath + "/manifest.json"
 			if _, err := os.Stat(manifestUri); errors.Is(err, os.ErrNotExist) {
 				continue
 			}
 
 			data, err := os.ReadFile(manifestUri)
 			if err != nil {
-				return config, err
+				return distribution, err
 			}
 
 			if err := json.Unmarshal(data, &config); err != nil {
-				return config, err
+				return distribution, err
 			}
 
 			if config.Name == name {
-				return config, nil
+				distribution.config = config
+				distribution.path = distPath
+				return distribution, nil
 			}
 		}
 	}
 
-	return config, fmt.Errorf("Could not find matching configuration")
+	return distribution, fmt.Errorf("Could not find matching configuration")
 }
 
 func getConfigPath() string {
