@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"runtime"
 )
@@ -86,6 +87,10 @@ func getConfigPath() string {
 		return "~/AppData/Local/nvim"
 	}
 	return "~/.config/nvim"
+}
+
+func RemoveConfig(fs fs.FS, foo fs.DirEntry, path string) {
+	//fileSystem := os.DirFS(path)
 }
 
 func copyConfig(target string, src string) error {
