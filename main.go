@@ -38,12 +38,18 @@ func main() {
 		fmt.Println(dist.config.Name)
 
 	case "clean":
-		_, err := getConfigPath()
+		var err error
+
+		configPath, err := getConfigPath()
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			return
 		}
-		// RemoveConfig(configPath) // TODO: Don't execute this yet. Write a passing unit test first
+
+		err = RemoveConfig(configPath)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+		}
 	}
 }
 
@@ -104,8 +110,8 @@ func getConfigPath() (string, error) {
 	return filepath.Join(homeDir, "/.config/nvim"), nil
 }
 
-func RemoveConfig(rootPath string) {
-	filepath.WalkDir(rootPath, func(path string, dir fs.DirEntry, err error) error {
+func RemoveConfig(rootPath string) error {
+	err := filepath.WalkDir(rootPath, func(path string, dir fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -120,6 +126,8 @@ func RemoveConfig(rootPath string) {
 
 		return nil
 	})
+
+	return err
 }
 
 func copyConfig(target string, src string) error {

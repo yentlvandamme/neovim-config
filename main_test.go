@@ -33,15 +33,6 @@ func createConfigFileStructure(t *testing.T) string {
 func TestRemoveCurrentConfig(t *testing.T) {
 	// Arrange
 	rootDirPath := createConfigFileStructure(t)
-	filepath.WalkDir(rootDirPath, func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			t.Fatalf(err.Error())
-		}
-
-		fmt.Println(path)
-
-		return err
-	})
 
 	// Act
 	RemoveConfig(rootDirPath)
