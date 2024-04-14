@@ -31,44 +31,44 @@ func createConfigFileStructure(t *testing.T) string {
 }
 
 func TestRemoveCurrentConfig(t *testing.T) {
-    // Arrange
+	// Arrange
 	rootDirPath := createConfigFileStructure(t)
-    filepath.WalkDir(rootDirPath, func(path string, d fs.DirEntry, err error) error {
-        if err != nil {
-            t.Fatalf(err.Error())
-        }
+	filepath.WalkDir(rootDirPath, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			t.Fatalf(err.Error())
+		}
 
-        fmt.Println(path)
+		fmt.Println(path)
 
-        return err
-    })
+		return err
+	})
 
-    // Act
-    RemoveConfig(rootDirPath)
+	// Act
+	RemoveConfig(rootDirPath)
 
-    // Assert
-    // => The root file should still exist
-    rootDir, err := os.Stat(rootDirPath)
-    if err != nil {
-        t.Fatalf("Root directory %s does not exist", rootDirPath)
-    }
-    if !rootDir.IsDir() {
-        t.Fatalf("Root path %s is not a directory", rootDirPath)
-    }
+	// Assert
+	// => The root file should still exist
+	rootDir, err := os.Stat(rootDirPath)
+	if err != nil {
+		t.Fatalf("Root directory %s does not exist", rootDirPath)
+	}
+	if !rootDir.IsDir() {
+		t.Fatalf("Root path %s is not a directory", rootDirPath)
+	}
 
-    // => Everything in the root file should be gone
-    filepath.WalkDir(rootDirPath, func(path string, d fs.DirEntry, err error) error {
-        if err != nil {
-            t.Fatalf(err.Error())
-        }
+	// => Everything in the root file should be gone
+	filepath.WalkDir(rootDirPath, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			t.Fatalf(err.Error())
+		}
 
-        if rootDirPath != path {
-            t.Fatalf("Directory %s is not empty", rootDirPath)
-        }
+		if rootDirPath != path {
+			t.Fatalf("Directory %s is not empty", rootDirPath)
+		}
 
-        return err
-    })
+		return err
+	})
 
-    // Clean-up
+	// Clean-up
 	os.RemoveAll(rootDirPath)
 }

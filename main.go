@@ -43,7 +43,7 @@ func main() {
 			fmt.Fprintln(os.Stderr, err)
 			return
 		}
-        // RemoveConfig(configPath) // TODO: Don't execute this yet. Write a passing unit test first
+		// RemoveConfig(configPath) // TODO: Don't execute this yet. Write a passing unit test first
 	}
 }
 
@@ -96,9 +96,11 @@ func getConfigPath() (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	if runtime.GOOS == "Windows" {
 		return filepath.Join(homeDir, "/AppData/Local/nvim"), nil
 	}
+
 	return filepath.Join(homeDir, "/.config/nvim"), nil
 }
 
@@ -109,13 +111,14 @@ func RemoveConfig(rootPath string) {
 		}
 
 		if rootPath != path {
-            if dir.IsDir() {
-                // os.RemoveAll
-            } else {
-                // Remove individual file
-            }
+			if dir.IsDir() {
+				os.RemoveAll(path)
+			} else {
+				os.Remove(path)
+			}
 		}
-        return nil
+
+		return nil
 	})
 }
 
