@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"path/filepath"
 	"runtime"
 )
 
@@ -35,6 +36,14 @@ func main() {
 		}
 
 		fmt.Println(dist.config.Name)
+
+	case "clean":
+		_, err := getConfigPath()
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			return
+		}
+        // RemoveConfig(configPath) // TODO: Don't execute this yet. Write a passing unit test first
 	}
 }
 
@@ -82,15 +91,32 @@ func getDist(name string) (Distribution, error) {
 	return distribution, fmt.Errorf("Could not find matching configuration")
 }
 
-func getConfigPath() string {
-	if runtime.GOOS == "Windows" {
-		return "~/AppData/Local/nvim"
+func getConfigPath() (string, error) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
 	}
-	return "~/.config/nvim"
+	if runtime.GOOS == "Windows" {
+		return filepath.Join(homeDir, "/AppData/Local/nvim"), nil
+	}
+	return filepath.Join(homeDir, "/.config/nvim"), nil
 }
 
-func RemoveConfig(fs fs.FS, foo fs.DirEntry, path string) {
-	//fileSystem := os.DirFS(path)
+func RemoveConfig(rootPath string) {
+	filepath.WalkDir(rootPath, func(path string, dir fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if rootPath != path {
+            if dir.IsDir() {
+                // os.RemoveAll
+            } else {
+                // Remove individual file
+            }
+		}
+        return nil
+	})
 }
 
 func copyConfig(target string, src string) error {

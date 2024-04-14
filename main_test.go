@@ -6,22 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-
-	"golang.org/x/tools/godoc/vfs"
-	"golang.org/x/tools/godoc/vfs/mapfs"
 )
-
-func initConfigFileStructure() vfs.FileSystem {
-	fs := mapfs.New(map[string]string{
-		".config/":                      "",
-		".config/dist/":                 "",
-		".config/dist/main.lua":         "main file",
-		".config/dist/utils/":           "",
-		".config/dist/utils/format.lua": "utils file",
-	})
-
-	return fs
-}
 
 func createConfigFileStructure(t *testing.T) string {
 	rootDirPath := t.TempDir()
@@ -46,13 +31,44 @@ func createConfigFileStructure(t *testing.T) string {
 }
 
 func TestRemoveCurrentConfig(t *testing.T) {
+    // Arrange
 	rootDirPath := createConfigFileStructure(t)
-	filepath.WalkDir(rootDirPath, func(path string, d fs.DirEntry, err error) error {
-		fmt.Println(path)
-		if err != nil {
-			return err
-		}
-		return nil
-	})
+    filepath.WalkDir(rootDirPath, func(path string, d fs.DirEntry, err error) error {
+        if err != nil {
+            t.Fatalf(err.Error())
+        }
+
+        fmt.Println(path)
+
+        return err
+    })
+
+    // Act
+    RemoveConfig(rootDirPath)
+
+    // Assert
+    // => The root file should still exist
+    rootDir, err := os.Stat(rootDirPath)
+    if err != nil {
+        t.Fatalf("Root directory %s does not exist", rootDirPath)
+    }
+    if !rootDir.IsDir() {
+        t.Fatalf("Root path %s is not a directory", rootDirPath)
+    }
+
+    // => Everything in the root file should be gone
+    filepath.WalkDir(rootDirPath, func(path string, d fs.DirEntry, err error) error {
+        if err != nil {
+            t.Fatalf(err.Error())
+        }
+
+        if rootDirPath != path {
+            t.Fatalf("Directory %s is not empty", rootDirPath)
+        }
+
+        return err
+    })
+
+    // Clean-up
 	os.RemoveAll(rootDirPath)
 }
