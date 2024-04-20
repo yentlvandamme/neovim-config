@@ -28,7 +28,13 @@ func main() {
 	case "load", "use":
 		configName := os.Args[2]
 
-		dist, distErr := getDist(configName)
+        configPath, configPathErr := getConfigPath()
+        if configPathErr != nil {
+            fmt.Fprintln(os.Stderr, configPathErr)
+            return
+        }
+
+        dist, distErr := getDist(configName)
 		if distErr != nil {
 			fmt.Fprintln(os.Stderr, distErr)
 			return
@@ -36,8 +42,12 @@ func main() {
 
 		fmt.Println(dist.config.Name)
 
+        // Remove the current config, and load the new one
+        removeErr := RemoveConfig(configPath)
+        if removeErr != nil {
+            fmt.Fprintln(os.Stderr, removeErr)
+        }
 	case "clean":
-
 		configPath, configPathErr := getConfigPath()
 		if configPathErr != nil {
 			fmt.Fprintln(os.Stderr, configPathErr)
@@ -101,11 +111,21 @@ func getConfigPath() (string, error) {
 		return "", homeDirErr
 	}
 
+    var configPath string
 	if runtime.GOOS == "Windows" {
-		return filepath.Join(homeDir, "/AppData/Local/nvim"), nil
-	}
+		configPath = filepath.Join(homeDir, "/AppData/Local/nvim")
+	} else {
+        configPath = filepath.Join(homeDir, "/.config/nvim")
+    }
 
-	return filepath.Join(homeDir, "/.config/nvim"), nil
+    if _,configPathErr := os.Stat(configPath); os.IsNotExist(configPathErr) {
+        mkDirErr := os.MkdirAll(configPath, 0755)
+        if mkDirErr != nil {
+            return "", mkDirErr
+        }
+    }
+
+    return configPath, nil
 }
 
 // TODO: This function isn't properly returning errors. The returned error is hard-coded as nil
