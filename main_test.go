@@ -27,6 +27,14 @@ func createConfigFileStructure(t *testing.T) string {
 	}
 	defer utilsFile.Close()
 
+    os.MkdirAll(rootDirPath+"/.config/utils/theme/", 0755)
+    themeFile, err := os.Create(rootDirPath+"/.config/utils/theme/colors.lua")
+    if err != nil {
+        fmt.Println("Could not create file")
+        panic(err)
+    }
+    defer themeFile.Close()
+
 	return rootDirPath
 }
 

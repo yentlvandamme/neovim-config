@@ -108,9 +108,10 @@ func getConfigPath() (string, error) {
 	return filepath.Join(homeDir, "/.config/nvim"), nil
 }
 
+// TODO: This function isn't properly returning errors. The returned error is hard-coded as nil
 func RemoveConfig(rootPath string) error {
 	err := filepath.WalkDir(rootPath, func(path string, dir fs.DirEntry, walkErr error) error {
-		if rootPath != path {
+		if path != rootPath {
 			if dir.IsDir() {
 				os.RemoveAll(path)
 			} else {
