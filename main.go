@@ -27,63 +27,61 @@ func main() {
 	switch cmd {
 	case "load", "use":
 		configName := os.Args[2]
-		var err error
 
-		dist, err := getDist(configName)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
+		dist, distErr := getDist(configName)
+		if distErr != nil {
+			fmt.Fprintln(os.Stderr, distErr)
 			return
 		}
 
 		fmt.Println(dist.config.Name)
 
 	case "clean":
-		var err error
 
-		configPath, err := getConfigPath()
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
+		configPath, configPathErr := getConfigPath()
+		if configPathErr != nil {
+			fmt.Fprintln(os.Stderr, configPathErr)
 			return
 		}
 
-		err = RemoveConfig(configPath)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
+        removeErr := RemoveConfig(configPath)
+		if removeErr != nil {
+			fmt.Fprintln(os.Stderr, removeErr)
+            return
 		}
 	}
 }
 
 func getDist(name string) (Distribution, error) {
-	var err error
 	distribution := Distribution{}
 	config := Config{}
 
-	currentDir, err := os.Getwd()
-	if err != nil {
-		return distribution, err
+	currentDir, getwdErr := os.Getwd()
+	if getwdErr != nil {
+		return distribution, getwdErr
 	}
 
 	distsPath := currentDir + "/distributions"
-	dists, err := os.ReadDir(distsPath)
-	if err != nil {
-		return distribution, err
+	dists, readDirErr := os.ReadDir(distsPath)
+	if readDirErr != nil {
+		return distribution, readDirErr
 	}
 
 	for _, dist := range dists {
 		if dist.IsDir() {
 			distPath := distsPath + "/" + dist.Name()
 			manifestUri := distPath + "/manifest.json"
-			if _, err := os.Stat(manifestUri); errors.Is(err, os.ErrNotExist) {
+			if _, fileNotExistErr := os.Stat(manifestUri); errors.Is(fileNotExistErr, os.ErrNotExist) {
 				continue
 			}
 
-			data, err := os.ReadFile(manifestUri)
-			if err != nil {
-				return distribution, err
+			data, readFileErr := os.ReadFile(manifestUri)
+			if readFileErr != nil {
+				return distribution, readFileErr
 			}
 
-			if err := json.Unmarshal(data, &config); err != nil {
-				return distribution, err
+			if unmarshalErr := json.Unmarshal(data, &config); unmarshalErr != nil {
+				return distribution, unmarshalErr
 			}
 
 			if config.Name == name {
@@ -98,9 +96,9 @@ func getDist(name string) (Distribution, error) {
 }
 
 func getConfigPath() (string, error) {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return "", err
+	homeDir, homeDirErr := os.UserHomeDir()
+	if homeDirErr != nil {
+		return "", homeDirErr
 	}
 
 	if runtime.GOOS == "Windows" {
@@ -111,14 +109,16 @@ func getConfigPath() (string, error) {
 }
 
 func RemoveConfig(rootPath string) error {
-	err := filepath.WalkDir(rootPath, func(path string, dir fs.DirEntry, err error) error {
-		if err != nil {
-			return err
+	err := filepath.WalkDir(rootPath, func(path string, dir fs.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
 		}
 
 		if rootPath != path {
 			if dir.IsDir() {
+                fmt.Println(path)
 				os.RemoveAll(path)
+                fmt.Println("after")
 			} else {
 				os.Remove(path)
 			}
