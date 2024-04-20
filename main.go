@@ -110,15 +110,9 @@ func getConfigPath() (string, error) {
 
 func RemoveConfig(rootPath string) error {
 	err := filepath.WalkDir(rootPath, func(path string, dir fs.DirEntry, walkErr error) error {
-		if walkErr != nil {
-			return walkErr
-		}
-
 		if rootPath != path {
 			if dir.IsDir() {
-                fmt.Println(path)
 				os.RemoveAll(path)
-                fmt.Println("after")
 			} else {
 				os.Remove(path)
 			}
