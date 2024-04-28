@@ -38,6 +38,35 @@ func createConfigFileStructure(t *testing.T) string {
 	return rootDirPath
 }
 
+func createEmptyConfigFolder(rootDirPath string) string {
+    configPath := rootDirPath+".config/"
+    os.MkdirAll(configPath, 0755)
+    return configPath
+}
+
+func createDistribution(rootDirPath string) string {
+    distPath := rootDirPath+"/distributions/"
+    os.MkdirAll(distPath, 0755)
+    os.MkdirAll(distPath+"src/", 0755)
+    os.MkdirAll(distPath+"src/themes/", 0755)
+
+    mainFile, err := os.Create(distPath+"src/main.lua")
+	if err != nil {
+		fmt.Println("Could not create main file")
+		panic(err)
+	}
+	defer mainFile.Close()
+
+    colorsFile, err := os.Create(distPath+"src/themes/colors.lua")
+	if err != nil {
+		fmt.Println("Could not create colors file")
+		panic(err)
+	}
+	defer colorsFile.Close()
+
+    return distPath
+}
+
 func TestRemoveCurrentConfig(t *testing.T) {
 	// Arrange
 	rootDirPath := createConfigFileStructure(t)
@@ -72,4 +101,23 @@ func TestRemoveCurrentConfig(t *testing.T) {
 	os.RemoveAll(rootDirPath)
 }
 
-func TestCopyConfig(t *testing.T) {}
+func TestCopyConfig(t *testing.T) {
+    // Arrange
+    rootDirPath := t.TempDir()
+    configPath := createEmptyConfigFolder(rootDirPath)
+    distributionPath := createDistribution(rootDirPath)
+
+    // Act
+    CopyConfig(configPath, distributionPath)
+
+    // Assert
+    pathsToCheck := []string{configPath+"src", configPath+"src/themes", configPath+"src/main.lua", configPath+"src/themes/colors.lua"}
+    for _, path := range pathsToCheck {
+        if _, err := os.Stat(path); os.IsNotExist(err) {
+            t.Fatalf("The directory does not contain the path: %s", path)
+        }
+    }
+
+    // Clean-up
+    os.RemoveAll(rootDirPath)
+}
