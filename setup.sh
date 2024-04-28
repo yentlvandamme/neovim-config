@@ -1,7 +1,7 @@
 echo "Initializing Neovim config"
 
 config_target=~/.config/nvim
-source=./Neovim/.
+source=./distributions/Azalea/.
 
 echo "Target location of config:" $config_target
 echo "Source of config:" $source
