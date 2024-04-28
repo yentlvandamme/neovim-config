@@ -40,12 +40,16 @@ func main() {
 			return
 		}
 
-		fmt.Println(dist.config.Name)
+        fmt.Printf("Found distributions %s\n", dist.config.Name)
 
-        // Remove the current config, and load the new one
         removeErr := RemoveConfig(configPath)
         if removeErr != nil {
             fmt.Fprintln(os.Stderr, removeErr)
+        }
+
+        copyConfigErr := CopyConfig(configPath, dist.path)
+        if copyConfigErr != nil {
+            fmt.Fprintln(os.Stderr, copyConfigErr)
         }
 	case "clean":
 		configPath, configPathErr := getConfigPath()
@@ -79,8 +83,8 @@ func getDist(name string) (Distribution, error) {
 
 	for _, dist := range dists {
 		if dist.IsDir() {
-			distPath := distsPath + "/" + dist.Name()
-			manifestUri := distPath + "/manifest.json"
+			distPath := distsPath + string(os.PathSeparator) + dist.Name()
+			manifestUri := distPath + string(os.PathSeparator) + "manifest.json"
 			if _, fileNotExistErr := os.Stat(manifestUri); errors.Is(fileNotExistErr, os.ErrNotExist) {
 				continue
 			}
@@ -145,6 +149,30 @@ func RemoveConfig(rootPath string) error {
 	return err
 }
 
-func copyConfig(target string, src string) error {
+func CopyConfig(configPath string, distPath string) error {
+    entries, err := os.ReadDir(distPath)
+    if err != nil {
+        return err
+    }
+
+    for _, entry := range entries {
+        currentEntryPath := distPath + string(os.PathSeparator) + entry.Name()
+        entryTargetPath := configPath + string(os.PathSeparator) + entry.Name()
+
+        if entry.IsDir() {
+            os.MkdirAll(entryTargetPath, 0755)
+            err := CopyConfig(entryTargetPath, currentEntryPath)
+            if err != nil {
+                return err
+            }
+        } else {
+            fileContents, err := os.ReadFile(currentEntryPath)
+            if err != nil {
+                return err
+            }
+            os.WriteFile(entryTargetPath, fileContents, 0666)
+        }
+    }
+
 	return nil
 }

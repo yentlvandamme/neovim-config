@@ -71,3 +71,5 @@ func TestRemoveCurrentConfig(t *testing.T) {
 	// Clean-up
 	os.RemoveAll(rootDirPath)
 }
+
+func TestCopyConfig(t *testing.T) {}
