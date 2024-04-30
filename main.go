@@ -1,14 +1,13 @@
 package main
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"runtime"
-    "neovim-config/distribution"
+
+	configs "github.com/yentlvandamme/neovim-config/libs"
 )
 
 func main() {
@@ -24,20 +23,20 @@ func main() {
             return
         }
 
-        dist, distErr := FindDist(configName)
+        dist, distErr := configs.FindDist(configName)
 		if distErr != nil {
 			fmt.Fprintln(os.Stderr, distErr)
 			return
 		}
 
-        fmt.Printf("Found distributions %s\n", dist.config.Name)
+        fmt.Printf("Found distributions %s\n", dist.Config.Name)
 
         removeErr := RemoveConfig(configPath)
         if removeErr != nil {
             fmt.Fprintln(os.Stderr, removeErr)
         }
 
-        copyConfigErr := CopyConfig(configPath, dist.path)
+        copyConfigErr := CopyConfig(configPath, dist.Path)
         if copyConfigErr != nil {
             fmt.Fprintln(os.Stderr, copyConfigErr)
         }

@@ -1,4 +1,4 @@
-package distribution
+package configs
 
 import (
 	"encoding/json"
@@ -13,8 +13,8 @@ type Config struct {
 }
 
 type Distribution struct {
-	path   string
-	config Config
+	Path   string
+	Config Config
 }
 
 func FindDist(name string) (Distribution, error) {
@@ -50,14 +50,14 @@ func FindDist(name string) (Distribution, error) {
 			}
 
 			if config.Name == name {
-				distribution.config = config
-				distribution.path = distPath
+				distribution.Config = config
+				distribution.Path = distPath
 				return distribution, nil
 			}
 		}
 	}
 
-	return distribution, fmt.Errorf("Could not find matching configuration")
+	return distribution, fmt.Errorf("could not find matching configuration")
 }
 
 
