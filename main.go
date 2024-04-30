@@ -21,52 +21,7 @@ type Distribution struct {
 	config Config
 }
 
-func main() {
-	cmd := os.Args[1]
-
-	switch cmd {
-	case "load", "use":
-		configName := os.Args[2]
-
-        configPath, configPathErr := getConfigPath()
-        if configPathErr != nil {
-            fmt.Fprintln(os.Stderr, configPathErr)
-            return
-        }
-
-        dist, distErr := getDist(configName)
-		if distErr != nil {
-			fmt.Fprintln(os.Stderr, distErr)
-			return
-		}
-
-        fmt.Printf("Found distributions %s\n", dist.config.Name)
-
-        removeErr := RemoveConfig(configPath)
-        if removeErr != nil {
-            fmt.Fprintln(os.Stderr, removeErr)
-        }
-
-        copyConfigErr := CopyConfig(configPath, dist.path)
-        if copyConfigErr != nil {
-            fmt.Fprintln(os.Stderr, copyConfigErr)
-        }
-	case "clean":
-		configPath, configPathErr := getConfigPath()
-		if configPathErr != nil {
-			fmt.Fprintln(os.Stderr, configPathErr)
-			return
-		}
-
-        removeErr := RemoveConfig(configPath)
-		if removeErr != nil {
-			fmt.Fprintln(os.Stderr, removeErr)
-            return
-		}
-	}
-}
-
-func getDist(name string) (Distribution, error) {
+func FindDist(name string) (Distribution, error) {
 	distribution := Distribution{}
 	config := Config{}
 
@@ -107,6 +62,52 @@ func getDist(name string) (Distribution, error) {
 	}
 
 	return distribution, fmt.Errorf("Could not find matching configuration")
+}
+
+
+func main() {
+	cmd := os.Args[1]
+
+	switch cmd {
+	case "load", "use":
+		configName := os.Args[2]
+
+        configPath, configPathErr := getConfigPath()
+        if configPathErr != nil {
+            fmt.Fprintln(os.Stderr, configPathErr)
+            return
+        }
+
+        dist, distErr := FindDist(configName)
+		if distErr != nil {
+			fmt.Fprintln(os.Stderr, distErr)
+			return
+		}
+
+        fmt.Printf("Found distributions %s\n", dist.config.Name)
+
+        removeErr := RemoveConfig(configPath)
+        if removeErr != nil {
+            fmt.Fprintln(os.Stderr, removeErr)
+        }
+
+        copyConfigErr := CopyConfig(configPath, dist.path)
+        if copyConfigErr != nil {
+            fmt.Fprintln(os.Stderr, copyConfigErr)
+        }
+	case "clean":
+		configPath, configPathErr := getConfigPath()
+		if configPathErr != nil {
+			fmt.Fprintln(os.Stderr, configPathErr)
+			return
+		}
+
+        removeErr := RemoveConfig(configPath)
+		if removeErr != nil {
+			fmt.Fprintln(os.Stderr, removeErr)
+            return
+		}
+	}
 }
 
 func getConfigPath() (string, error) {
