@@ -36,7 +36,7 @@ func NewDistManager() (*DistributionManager, error) {
     distsPath := currentDir + "/distributions"
     dists, err := os.ReadDir(distsPath)
 	if err != nil {
-		return nil, err
+		return &DistributionManager{}, err
 	}
     if err != nil {
         return &DistributionManager{}, err

@@ -44,7 +44,7 @@ func main() {
 		configPath, configPathErr := getConfigPath()
 		if configPathErr != nil {
 			fmt.Fprintln(os.Stderr, configPathErr)
-			return
+            return
 		}
 
         removeErr := RemoveConfig(configPath)
