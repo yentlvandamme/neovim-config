@@ -74,7 +74,8 @@ func getConfigPath() (string, error) {
 
     var configPath string
 	if runtime.GOOS == "Windows" {
-		configPath = filepath.Join(homeDir, "/AppData/Local/nvim")
+        panic("Windows is currently not supported")
+		// configPath = filepath.Join(homeDir, "/AppData/Local/nvim")
 	} else {
         configPath = filepath.Join(homeDir, "/.config/nvim")
     }
