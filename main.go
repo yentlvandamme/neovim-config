@@ -13,6 +13,18 @@ import (
 func main() {
 	cmd := os.Args[1]
 
+    currentDir, err := os.Getwd()
+    if err != nil {
+        fmt.Printf(err.Error())
+    }
+    distsPath := currentDir + "/distributions"
+
+    mngr, err := configs.NewDistManager(distsPath)
+    if err != nil {
+        fmt.Printf(err.Error())
+    }
+    mngr.Debug()
+
 	switch cmd {
 	case "load", "use":
 		configName := os.Args[2]

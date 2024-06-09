@@ -1,11 +1,15 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
+
+	configs "github.com/yentlvandamme/neovim-config/libs"
 )
 
 func createConfigFileStructure(t *testing.T) string {
@@ -116,6 +120,85 @@ func TestCopyConfig(t *testing.T) {
         if _, err := os.Stat(path); os.IsNotExist(err) {
             t.Fatalf("The directory does not contain the path: %s", path)
         }
+    }
+
+    // Clean-up
+    os.RemoveAll(rootDirPath)
+}
+
+func createSingleDistribution(id int, rootDirPath string) {
+    distName := "MockDist" + strconv.Itoa(id)
+    distFolder := filepath.Join(rootDirPath, distName)
+
+    if err := os.MkdirAll(distFolder, 0755); err != nil {
+        fmt.Println("Could not create distribution folder for: " + distName)
+        panic(err)
+    }
+
+    // Create some empty mock files
+    mainFile, err := os.Create(filepath.Join(rootDirPath + "main.lua"))
+    if err != nil {
+        fmt.Printf("Could not create main file: %s", distName)
+        panic(err)
+    }
+    defer mainFile.Close()
+
+    createManifestFile(distFolder, distName)
+}
+
+func createManifestFile(rootDirPath string, distName string) {
+    config := configs.Config {
+        Name: distName,
+        Version: "0.0.1",
+        Description: "A mock distribution for: " + distName,
+    }
+
+    json, err := json.Marshal(config)
+    if err != nil {
+        fmt.Println("Could not marshal config")
+        panic(err)
+    }
+
+    if err := os.WriteFile(filepath.Join(rootDirPath, "manifest.json"), json, 0644); err != nil {
+        fmt.Printf("Could not create manifest file: %s", distName)
+        panic(err)
+    }
+
+}
+
+func createDistributions(distsPath string, amount int) {
+    for i := 0; i < amount; i++ {
+        createSingleDistribution(i, distsPath)
+    }
+}
+
+func TestFindDistribution(t *testing.T) {
+    // Arrange
+    rootDirPath := t.TempDir()
+    distsPath := filepath.Join(rootDirPath, "distributions")
+    createDistributions(distsPath, 3)
+
+    mngr, err := configs.NewDistManager(distsPath)
+    if err != nil {
+        t.Fatalf("Could not create distribution manager: %s", err)
+    }
+
+    requestedMockName := "MockDist2"
+
+    // Act
+    distResult, err := mngr.FindDistV2(requestedMockName)
+
+    // Assert
+    if err != nil {
+        t.Fatalf("Could not find distribution: %s", err)
+    }
+
+    if distResult.Config.Name != requestedMockName {
+        t.Fatalf("Expected: %s but got: %s", distResult.Config.Name, requestedMockName)
+    }
+
+    if distResult.Config.Description != "A mock distribution for: " + requestedMockName {
+        t.Fatalf("Expected: %s but got: %s", distResult.Config.Description, "A mock distribution for: " + requestedMockName)
     }
 
     // Clean-up

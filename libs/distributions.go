@@ -27,13 +27,7 @@ type DistributionManager struct {
 // then looks up the distribution, and executes the distribution's load method
 
 // Should create a distribution manager
-func NewDistManager() (*DistributionManager, error) {
-    currentDir, err := os.Getwd()
-    if err != nil {
-        return &DistributionManager{}, err
-    }
-
-    distsPath := currentDir + "/distributions"
+func NewDistManager(distsPath string) (*DistributionManager, error) {
     dists, err := os.ReadDir(distsPath)
 	if err != nil {
 		return &DistributionManager{}, err
