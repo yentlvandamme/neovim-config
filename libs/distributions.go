@@ -21,12 +21,6 @@ type DistributionManager struct {
     Distributions map[string]Distribution
 }
 
-// TODO: Should we consider creating a DistributionManager, which takes care of clearing configs,
-// As well as getting the current config path? It'd extend or wrap around Distribution-methods.
-// ie. when loading a distribution, we pass the requested distribution name to the manager. That manager
-// then looks up the distribution, and executes the distribution's load method
-
-// Should create a distribution manager
 func NewDistManager(distsPath string) (*DistributionManager, error) {
     dists, err := os.ReadDir(distsPath)
 	if err != nil {
@@ -67,7 +61,6 @@ func NewDistManager(distsPath string) (*DistributionManager, error) {
     }, nil
 }
 
-// Gets a distribution from the collection of distributions
 func (mngr *DistributionManager) FindDist(name string) (Distribution, error) {
     dist, ok := mngr.Distributions[name]
     if !ok {
