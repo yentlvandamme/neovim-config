@@ -186,7 +186,7 @@ func TestFindDistribution(t *testing.T) {
     requestedMockName := "MockDist2"
 
     // Act
-    distResult, err := mngr.FindDistV2(requestedMockName)
+    distResult, err := mngr.FindDist(requestedMockName)
 
     // Assert
     if err != nil {

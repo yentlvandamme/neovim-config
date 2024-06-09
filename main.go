@@ -23,7 +23,6 @@ func main() {
     if err != nil {
         fmt.Printf(err.Error())
     }
-    mngr.Debug()
 
 	switch cmd {
 	case "load", "use":
@@ -35,7 +34,7 @@ func main() {
             return
         }
 
-        dist, distErr := configs.FindDist(configName)
+        dist, distErr := mngr.FindDist(configName)
 		if distErr != nil {
 			fmt.Fprintln(os.Stderr, distErr)
 			return
