@@ -1,28 +1,28 @@
 package main
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"runtime"
+
+	configs "github.com/yentlvandamme/neovim-config/libs"
 )
-
-type Config struct {
-	Name        string
-	Version     string
-	Description string
-}
-
-type Distribution struct {
-	path   string
-	config Config
-}
 
 func main() {
 	cmd := os.Args[1]
+
+    currentDir, err := os.Getwd()
+    if err != nil {
+        fmt.Printf(err.Error())
+    }
+    distsPath := currentDir + "/distributions"
+
+    mngr, err := configs.NewDistManager(distsPath)
+    if err != nil {
+        fmt.Printf(err.Error())
+    }
 
 	switch cmd {
 	case "load", "use":
@@ -34,20 +34,20 @@ func main() {
             return
         }
 
-        dist, distErr := getDist(configName)
+        dist, distErr := mngr.FindDist(configName)
 		if distErr != nil {
 			fmt.Fprintln(os.Stderr, distErr)
 			return
 		}
 
-        fmt.Printf("Found distributions %s\n", dist.config.Name)
+        fmt.Printf("Found distributions %s\n", dist.Config.Name)
 
         removeErr := RemoveConfig(configPath)
         if removeErr != nil {
             fmt.Fprintln(os.Stderr, removeErr)
         }
 
-        copyConfigErr := CopyConfig(configPath, dist.path)
+        copyConfigErr := CopyConfig(configPath, dist.Path)
         if copyConfigErr != nil {
             fmt.Fprintln(os.Stderr, copyConfigErr)
         }
@@ -55,7 +55,7 @@ func main() {
 		configPath, configPathErr := getConfigPath()
 		if configPathErr != nil {
 			fmt.Fprintln(os.Stderr, configPathErr)
-			return
+            return
 		}
 
         removeErr := RemoveConfig(configPath)
@@ -66,49 +66,6 @@ func main() {
 	}
 }
 
-func getDist(name string) (Distribution, error) {
-	distribution := Distribution{}
-	config := Config{}
-
-	currentDir, getwdErr := os.Getwd()
-	if getwdErr != nil {
-		return distribution, getwdErr
-	}
-
-	distsPath := currentDir + "/distributions"
-	dists, readDirErr := os.ReadDir(distsPath)
-	if readDirErr != nil {
-		return distribution, readDirErr
-	}
-
-	for _, dist := range dists {
-		if dist.IsDir() {
-			distPath := distsPath + string(os.PathSeparator) + dist.Name()
-			manifestUri := distPath + string(os.PathSeparator) + "manifest.json"
-			if _, fileNotExistErr := os.Stat(manifestUri); errors.Is(fileNotExistErr, os.ErrNotExist) {
-				continue
-			}
-
-			data, readFileErr := os.ReadFile(manifestUri)
-			if readFileErr != nil {
-				return distribution, readFileErr
-			}
-
-			if unmarshalErr := json.Unmarshal(data, &config); unmarshalErr != nil {
-				return distribution, unmarshalErr
-			}
-
-			if config.Name == name {
-				distribution.config = config
-				distribution.path = distPath
-				return distribution, nil
-			}
-		}
-	}
-
-	return distribution, fmt.Errorf("Could not find matching configuration")
-}
-
 func getConfigPath() (string, error) {
 	homeDir, homeDirErr := os.UserHomeDir()
 	if homeDirErr != nil {
@@ -117,7 +74,8 @@ func getConfigPath() (string, error) {
 
     var configPath string
 	if runtime.GOOS == "Windows" {
-		configPath = filepath.Join(homeDir, "/AppData/Local/nvim")
+        panic("Windows is currently not supported")
+		// configPath = filepath.Join(homeDir, "/AppData/Local/nvim")
 	} else {
         configPath = filepath.Join(homeDir, "/.config/nvim")
     }

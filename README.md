@@ -12,3 +12,8 @@ There are certain technical requirements at the time of writing this:
 
 - The Neovim version should at least be `0.9.0`. This version is not available through download. Meaning you'll have to download the source and build it from there. There are plenty of guides if needed
 - We currently use Packer to install and sync all of the plugins. Make sure you have Packer installed.
+
+## FAQ
+
+### PackerSync is not recognized as a command
+In order to execute the PackerSync command, go to the `packer.lua`-file. Then execute `:so`, after which you can execute `:PackerSync`.
